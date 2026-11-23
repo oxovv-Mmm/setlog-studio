@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff8f7">
+<title>setlog studio ♡</title>
+<style>
+:root{--pink:#e8b9c4;--deep:#9c6877;--cream:#fff8f4;--ink:#5d4b50;--line:#f0dfe2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+header{padding:25px 18px 17px;text-align:center;background:linear-gradient(135deg,#fff7f6,#f9e9ec);border-bottom:1px solid var(--line)}
+.brand{font-family:Georgia,serif;font-size:29px;letter-spacing:.06em;color:#946574}
+.sub{font-size:11px;letter-spacing:.16em;color:#b38b95;margin-top:5px}
+main{max-width:720px;margin:auto;padding:17px 14px 40px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;margin:0 0 14px;box-shadow:0 5px 18px #9c68770b}
+h2{font-size:13px;margin:0 0 12px;color:#986b78;letter-spacing:.08em}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button,.filelabel,select,input[type=text],input[type=date]{font:inherit}
+button,.filelabel{border:0;border-radius:999px;padding:11px 15px;background:#f7e8eb;color:#875b69;font-size:13px;font-weight:600;cursor:pointer}
+button.primary{background:#b77f90;color:white}
+button.ghost{background:#fff;border:1px solid var(--line)}
+input[type=file]{display:none}
+input[type=text],input[type=date],select{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;color:var(--ink);font-size:13px;max-width:100%}
+label.small{font-size:12px;color:#92757d;display:flex;align-items:center;gap:7px}
+input[type=range]{accent-color:#bd8796;width:100%}
+#previewWrap{background:#f3e8e7;border-radius:16px;padding:12px;display:flex;justify-content:center;overflow:hidden}
+#canvas{width:min(100%,390px);aspect-ratio:9/16;background:#e8d9d5;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 7px 24px #6e4a4a22;position:relative}
+.frame{position:relative;flex:1;min-height:0;overflow:hidden;background:#ded2ce;border-bottom:1px solid #ffffff66}
+.frame:last-child{border-bottom:0}
+.frame img{width:100%;height:100%;object-fit:cover;display:block}
+.frame.empty{display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,#d9c5c2,#c9b3b2);font-family:Georgia,serif;font-size:13px;letter-spacing:.12em}
+.frame .stamp{position:absolute;left:10px;bottom:8px;color:white;font-size:10px;text-shadow:0 1px 5px #0009;letter-spacing:.08em;pointer-events:none}
+.frame .remove{position:absolute;right:7px;top:7px;width:28px;height:28px;padding:0;background:#ffffffd9;color:#795a62;font-size:17px;line-height:28px}
+.frame .pick{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.control{background:#fff9f8;border:1px solid #f3e5e7;border-radius:12px;padding:10px}
+.control span{display:block;font-size:11px;color:#9d7a82;margin-bottom:6px}
+.control input,.control select{width:100%}
+.note{font-size:11px;color:#a58d91;line-height:1.6;margin:9px 2px 0}
+#framesList{display:grid;gap:8px}
+.frameItem{display:flex;align-items:center;gap:9px;border:1px solid var(--line);padding:8px;border-radius:12px;background:#fff}
+.thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;background:#f1e4e3;flex:none}
+.frameItem .meta{flex:1;min-width:0;font-size:12px}
+.frameItem .meta strong{display:block;color:#795c64;margin-bottom:3px}
+.frameItem .meta small{color:#ad9298}
+.frameItem button{padding:7px 10px;font-size:11px}
+.footer{text-align:center;font-family:Georgia,serif;color:#c29ba4;font-size:12px;padding:5px}
+@media(min-width:650px){.editor{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}.editor .panel{margin:0 0 14px}}
+</style>
+</head>
+<body>
+<header><div class="brand">setlog studio ♡</div><div class="sub">YOUR LITTLE PHOTO DIARY</div></header>
+<main>
+  <section class="panel">
+    <h2>01 — PHOTO</h2>
+    <div class="row">
+      <label class="filelabel" for="multi">＋ 写真をまとめて追加</label>
+      <input id="multi" type="file" accept="image/*" multiple>
+      <button class="ghost" id="addFrame">＋ コマを追加</button>
+      <button class="ghost" id="clear">リセット</button>
+    </div>
+    <p class="note">写真を選ぶと、縦長キャンバスに横長のコマとして並びます。各コマをタップして写真を入れ替えられます。</p>
+  </section>
+
+  <div class="editor">
+    <div>
+      <section class="panel">
+        <h2>02 — PREVIEW</h2>
+        <div id="previewWrap"><div id="canvas" aria-label="setlog preview"></div></div>
+        <p class="note">プレビュー内のコマをタップして写真を変更できます。</p>
+      </section>
+      <section class="panel">
+        <h2>03 — EXPORT</h2>
+        <div class="row">
+          <button class="primary" id="save">画像を保存 ♡</button>
+          <button class="ghost" id="saveHigh">高画質で保存</button>
+        </div>
+        <p class="note">PNG形式で保存します。iPhoneでは保存後、共有メニューから「画像を保存」を選べます。</p>
+      </section>
+    </div>
+    <div>
+      <section class="panel">
+        <h2>04 — CUSTOMIZE</h2>
+        <div class="controls">
+          <div class="control"><span>コマ数</span><select id="count"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+          <div class="control"><span>画像比率</span><select id="ratio"><option value="9:16" selected>9 : 16（縦長）</option><option value="4:5">4 : 5</option><option value="3:4">3 : 4</option><option value="1:1">1 : 1</option></select></div>
+          <div class="control"><span>コマのすき間</span><input id="gap" type="range" min="0" max="18" value="2"></div>
+          <div class="control"><span>写真の表示</span><select id="fit"><option value="cover" selected>全体を大きく（トリミング）</option><option value="contain">写真全体を表示</option></select></div>
+          <div class="control"><span>日付</span><input id="date" type="date"></div>
+          <div class="control"><span>日付表示</span><select id="dateOn"><option value="yes" selected>表示する</option><option value="no">表示しない</option></select></div>
+        </div>
+        <p class="note">「写真の表示」は全コマ共通です。写真の位置調整は、画像を編集してから追加してください。</p>
+      </section>
+      <section class="panel">
+        <h2>05 — PHOTO ORDER</h2>
+        <div id="framesList"></div>
+      </section>
+    </div>
+  </div>
+  <div class="footer">made with love & little moments ♡</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let frames=Array.from({length:4},()=>null);
+let objectUrls=[];
+const today=new Date();
+$('date').value=[today.getFullYear(),String(today.getMonth()+1).padStart(2,'0'),String(today.getDate()).padStart(2,'0')].join('-');
+function cleanUrls(){objectUrls.forEach(URL.revokeObjectURL);objectUrls=[]}
+function setCount(n){n=Math.max(1,Math.min(12,n));while(frames.length<n)frames.push(null);frames=frames.slice(0,n);$('count').value=n;render()}
+function addFiles(files){
+ const imgs=[...files].filter(f=>f.type.startsWith('image/'));
+ imgs.forEach((f,i)=>{const url=URL.createObjectURL(f);objectUrls.push(url);let slot=frames.findIndex(x=>!x);if(slot<0){if(frames.length<12){frames.push(null);slot=frames.length-1}else slot=i%frames.length}frames[slot]={url,name:f.name};});
+ $('count').value=frames.length;render();
+}
+function render(){
+ const canvas=$('canvas');canvas.innerHTML='';const [w,h]=$('ratio').value.split(':').map(Number);canvas.style.aspectRatio=w+'/'+h;
+ const gap=+$('gap').value;canvas.style.gap=gap+'px';canvas.style.padding=gap?'0':'0';
+ const date=$('date').value?$('date').value.replaceAll('-','.'):''; 
+ frames.forEach((f,i)=>{
+  const el=document.createElement('div');el.className='frame'+(f?'':' empty');el.style.flex='1 1 0';el.style.minHeight='0';
+  if(f){const im=document.createElement('img');im.src=f.url;im.style.objectFit=$('fit').value;el.appendChild(im)}
+  else el.textContent='your moment';
+  if(date&&$('dateOn').value==='yes'){const st=document.createElement('div');st.className='stamp';st.textContent=date+'  /  '+String(i+1).padStart(2,'0');el.appendChild(st)}
+  const pick=document.createElement('input');pick.type='file';pick.accept='image/*';pick.className='pick';pick.setAttribute('aria-label','コマ'+(i+1)+'の写真を選ぶ');pick.addEventListener('change',e=>{if(e.target.files[0]){const url=URL.createObjectURL(e.target.files[0]);objectUrls.push(url);frames[i]={url,name:e.target.files[0].name};render()}});el.appendChild(pick);
+  canvas.appendChild(el);
+ });
+ const list=$('framesList');list.innerHTML='';
+ frames.forEach((f,i)=>{
+  const item=document.createElement('div');item.className='frameItem';
+  const thumb=document.createElement('div');if(f){const im=document.createElement('img');im.src=f.url;im.className='thumb';thumb.appendChild(im)}else{thumb.className='thumb';thumb.style.display='grid';thumb.style.placeItems='center';thumb.textContent='♡'}
+  const meta=document.createElement('div');meta.className='meta';const strong=document.createElement('strong');strong.textContent='FRAME '+String(i+1).padStart(2,'0');const small=document.createElement('small');small.textContent=f?f.name:'写真未設定';meta.append(strong,small);
+  const up=document.createElement('button');up.textContent='↑';up.className='ghost';up.disabled=i===0;up.onclick=()=>{[frames[i-1],frames[i]]=[frames[i],frames[i-1]];render()};
+  const down=document.createElement('button');down.textContent='↓';down.className='ghost';down.disabled=i===frames.length-1;down.onclick=()=>{[frames[i+1],frames[i]]=[frames[i],frames[i+1]];render()};
+  const del=document.createElement('button');del.textContent='×';del.className='ghost';del.onclick=()=>{frames[i]=null;render()};
+  item.append(thumb,meta,up,down,del);list.appendChild(item);
+ });
+}
+$('multi').addEventListener('change',e=>{addFiles(e.target.files);e.target.value=''});
+$('addFrame').onclick=()=>{if(frames.length<12)setCount(frames.length+1)};
+$('clear').onclick=()=>{cleanUrls();frames=Array.from({length:+$('count').value},()=>null);render()};
+['count','ratio','gap','fit','date','dateOn'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='count')setCount(+$('count').value);else render()}));
+function drawExport(scale){
+ const [rw,rh]=$('ratio').value.split(':').map(Number),W=1080*scale,H=Math.round(W*rh/rw),gap=+$('gap').value*scale;
+ const c=document.createElement('canvas');c.width=W;c.height=H;const ctx=c.getContext('2d');ctx.fillStyle='#e8d9d5';ctx.fillRect(0,0,W,H);
+ const usable=H-gap*(frames.length-1),fh=usable/frames.length;
+ const date=$('date').value?$('date').value.replaceAll('-','.'):''; 
+ return Promise.all(frames.map((f,i)=>new Promise(resolve=>{
+  const y=i*(fh+gap);
+  if(!f){ctx.fillStyle='#d8c5c2';ctx.fillRect(0,y,W,fh);resolve();return}
+  const im=new Image();im.onload=()=>{
+   const mode=$('fit').value,ir=im.width/im.height,cr=W/fh;let dw,dh,dx,dy;
+   if(mode==='cover'){if(ir>cr){dh=fh;dw=fh*ir;dx=(W-dw)/2;dy=y}else{dw=W;dh=W/ir;dx=0;dy=y+(fh-dh)/2}}
+   else{const s=Math.min(W/im.width,fh/im.height);dw=im.width*s;dh=im.height*s;dx=(W-dw)/2;dy=y+(fh-dh)/2}
+   ctx.save();ctx.beginPath();ctx.rect(0,y,W,fh);ctx.clip();ctx.drawImage(im,dx,dy,dw,dh);ctx.restore();
+   if(date&&$('dateOn').value==='yes'){ctx.save();ctx.font=`${22*scale}px Arial`;ctx.fillStyle='rgba(0,0,0,.52)';ctx.shadowColor='#000';ctx.shadowBlur=5*scale;ctx.fillText(date+'  /  '+String(i+1).padStart(2,'0'),28*scale,y+fh-24*scale);ctx.restore()}
+   resolve();
+  };im.onerror=resolve;im.src=f.url;
+ })));
+}
+async function save(scale){await drawExport(scale);const c=await drawExport(scale);const a=document.createElement('a');a.download='setlog-'+(scale>1?'high-':'')+Date.now()+'.png';a.href=c.toDataURL('image/png');a.click()}
+$('save').onclick=()=>save(1);
+$('saveHigh').onclick=()=>save(2);
+render();
+</script>
+</body>
+</html>
